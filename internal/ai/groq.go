@@ -61,6 +61,9 @@ type GroqError struct {
 
 func NewGroqClient() (*GroqClient, error) {
 	apiKey := GetAPIKey()
+	if apiKey == "" {
+		return nil, fmt.Errorf("GROQ_API_KEY environment variable is not set")
+	}
 
 	return &GroqClient{
 		apiKey:  apiKey,
