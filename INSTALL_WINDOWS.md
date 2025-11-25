@@ -86,13 +86,15 @@ scoop install snip
 2. Baixe `snip_Windows_x86_64.zip`
 3. Extraia e adicione ao PATH
 
-## ⚙️ Configuração da API Groq (Opcional)
+## ⚙️ Configuração da API Groq (Obrigatório para IA)
 
-Para usar as funcionalidades de IA:
+Para usar as funcionalidades de IA, você **deve** configurar a variável de ambiente `GROQ_API_KEY`:
 
 1. **Obtenha sua API key:**
-   - Acesse: https://console.groq.com/
-   - Crie uma conta e gere uma API key
+   - Acesse: https://console.groq.com/keys
+   - Crie uma conta ou faça login
+   - Gere uma nova chave de API
+   - Copie a chave
 
 2. **Configure a variável de ambiente:**
 
@@ -101,19 +103,24 @@ Para usar as funcionalidades de IA:
    $env:GROQ_API_KEY="sua-chave-aqui"
    ```
 
-   **Permanente:**
+   **Permanente (recomendado):**
    ```powershell
    [Environment]::SetEnvironmentVariable("GROQ_API_KEY", "sua-chave-aqui", "User")
    ```
 
-   **Nota:** Se não configurar, o Snip usará uma chave padrão (não recomendado para produção).
+3. **Verifique a configuração:**
+   ```powershell
+   echo $env:GROQ_API_KEY
+   ```
+
+   **Importante:** Sem a chave configurada, os comandos de IA retornarão erro. Veja [README_API_KEY.md](README_API_KEY.md) para mais detalhes.
 
 ## ✅ Verificação
 
 Após instalar, teste:
 
 ```powershell
-# Ver ajuda
+# Ver ajuda geral
 snip --help
 
 # Criar uma nota de teste
@@ -122,8 +129,14 @@ snip create "Minha Primeira Nota" --message "Olá, Snip!"
 # Listar notas
 snip list
 
-# Testar IA (se configurado)
-snip ai "Hello, AI!"
+# Testar IA (requer GROQ_API_KEY configurada)
+snip ai-create "Teste de IA"
+
+# Criar projeto
+snip project create "Meu Projeto"
+
+# Criar checklist com IA
+snip checklist ai-create "Checklist Teste" --items 5
 ```
 
 ## 🐛 Solução de Problemas
@@ -168,26 +181,83 @@ Veja `AI_FEATURES.md` para mais informações sobre IA.
 
 ## 🎯 Comandos Rápidos
 
+### 📝 Notas Básicas
 ```powershell
 # Criar nota
 snip create "Título" --message "Conteúdo"
 
-# Criar nota com IA
-snip ai-create "Tópico" --tag "tag1"
+# Listar notas
+snip list
 
-# Buscar
+# Buscar notas
 snip find "termo"
 
-# Busca com IA
-snip ai-search "termo"
+# Ver nota específica
+snip show 1
+```
 
-# Perguntar à IA
-snip ai-ask "pergunta"
+### 🤖 Funcionalidades de IA
+```powershell
+# Criar nota com IA
+snip ai-create "Python Básico" --tag "programming"
 
-# Gerar código
-snip ai-code "descrição" --lang "go"
+# Gerar código com IA
+snip ai-code "função para ordenar array" --lang "python"
 
-# Ver todas as opções
+# Melhorar busca com IA
+snip ai-search "meeting notes"
+
+# Fazer perguntas à IA
+snip ai-ask "O que escrevi sobre Python?"
+```
+
+### 📁 Gerenciamento de Projetos
+```powershell
+# Criar projeto
+snip project create "Aplicativo Web" --description "Sistema de gestão"
+
+# Criar projeto com plano de IA
+snip project ai-create "Mobile App" --description "iOS e Android"
+
+# Listar projetos
+snip project list
+
+# Ver projeto e tarefas
+snip project show 1
+```
+
+### ✅ Tarefas
+```powershell
+# Criar tarefa
+snip task create "Implementar login" --project 1 --priority high --due 2025-12-15
+
+# Listar tarefas
+snip task list --project 1
+
+# Marcar tarefa como concluída
+snip task toggle 1
+```
+
+### 📋 Checklists
+```powershell
+# Criar checklist com IA
+snip checklist ai-create "Checklist de Deploy" --items 10 --project 1
+
+# Ver checklist com progresso
+snip checklist show 1
+
+# Marcar item como concluído
+snip checklist item-toggle 5
+
+# Adicionar item manualmente
+snip checklist item-add 1 "Testar conexão com banco"
+```
+
+### 📚 Ver todas as opções
+```powershell
 snip --help
+snip project --help
+snip task --help
+snip checklist --help
 ```
 

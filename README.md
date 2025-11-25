@@ -8,7 +8,7 @@
   <h1 style="margin: 0;">Snip</h1>
 </div>
 
-A fast and efficient command-line note-taking tool built with Go. Snip helps you capture, organize, and search your notes.
+A fast and efficient command-line note-taking tool built with Go. Snip helps you capture, organize, and search your notes with AI-powered features, project management, tasks, and checklists.
 
 ## 🎬 Demo
 
@@ -16,24 +16,45 @@ A fast and efficient command-line note-taking tool built with Go. Snip helps you
 
 ## ✨ Features
 
-### Current Functionality
+### 📝 Notes Management
 
-- **📝 Create Notes**: Quickly create new notes with title and content
-- **📋 List Notes**: View all your notes with chronological sorting options
-- **🔍 Search Notes**: Full-text search across all notes using SQLite FTS4
-- **✏️ Edit Notes**: Update existing notes using your preferred editor
-- **📖 Get Notes**: Retrieve specific notes by ID with markdown rendering support
-- **🗑️ Delete Notes**: Remove notes you no longer need
-- **🏷️ Tags**: Organize notes with custom tags
-- **✏️ Patch Notes**: Update note titles and manage tags
-- **📤 Export Notes**: Export notes to JSON and Markdown formats
-- **📥 Import Notes**: Import notes(markdown) from files and directories
-- **🖼️ Markdown Preview**: Render markdown content beautifully in the terminal
-- **⚡ Fast Performance**: SQLite database with optimized indexes (90-127ns operations)
-- **🔧 Editor Integration**: Supports nano, vim, vi, or custom `$EDITOR`
-- **🧪 Comprehensive Testing**: Full test coverage with performance benchmarks
+- **Create Notes**: Quickly create new notes with title and content
+- **List Notes**: View all your notes with chronological sorting options
+- **Search Notes**: Full-text search across all notes using SQLite FTS4
+- **Edit Notes**: Update existing notes using your preferred editor
+- **Get Notes**: Retrieve specific notes by ID with markdown rendering support
+- **Delete Notes**: Remove notes you no longer need
+- **Tags**: Organize notes with custom tags
+- **Patch Notes**: Update note titles and manage tags
+- **Export Notes**: Export notes to JSON and Markdown formats
+- **Import Notes**: Import notes (markdown) from files and directories
+- **Markdown Preview**: Render markdown content beautifully in the terminal
+- **Fast Performance**: SQLite database with optimized indexes (90-127ns operations)
+- **Editor Integration**: Supports nano, vim, vi, or custom `$EDITOR`
+- **Comprehensive Testing**: Full test coverage with performance benchmarks
+
+### 🤖 AI-Powered Features
+
+- **AI Create Notes**: Generate notes with AI-powered content based on topics
+- **AI Code Generation**: Generate code in multiple languages with AI
+- **AI Search Enhancement**: Improve search queries using AI
+- **AI Q&A**: Ask questions to AI based on your notes context
+- **AI Project Planning**: Generate detailed project plans with AI
+- **AI Checklist Generation**: Create checklists with AI-generated items
+
+### 📁 Project Management
+
+- **Projects**: Create and manage projects with descriptions and status
+- **Tasks**: Create tasks within projects with priorities and due dates
+- **Task Status**: Track tasks (pending, in_progress, completed)
+- **Task Priorities**: Set task priorities (low, medium, high)
+- **Checklists**: Create checklists for projects or tasks
+- **Checklist Items**: Manage checklist items with completion tracking
+- **Progress Tracking**: Visual progress indicators for checklists
 
 ### Command Examples
+
+#### 📝 Basic Notes
 
 ```bash
 # Create a new note
@@ -91,6 +112,103 @@ snip import /path/to/notes/directory
 snip editor
 ```
 
+#### 🤖 AI Features
+
+```bash
+# Create a note with AI-generated content
+snip ai-create "Python Decorators" --tag "programming"
+
+# Generate code with AI
+snip ai-code "function to reverse a string" --lang "python"
+
+# Improve search query with AI
+snip ai-search "meeting notes"
+
+# Ask questions to AI based on your notes
+snip ai-ask "What did I write about Python?"
+```
+
+#### 📁 Project Management
+
+```bash
+# Create a project
+snip project create "Web Application" --description "New web app project"
+
+# Create a project with AI-generated plan
+snip project ai-create "Mobile App" --description "iOS and Android app"
+
+# List all projects
+snip project list
+
+# Show project details with tasks
+snip project show 1
+
+# Update project
+snip project update 1 "Updated Name" --status "active"
+
+# Delete a project
+snip project delete 1
+```
+
+#### ✅ Tasks
+
+```bash
+# Create a task
+snip task create "Implement authentication" --project 1 --priority high --due 2025-12-15
+
+# List all tasks
+snip task list
+
+# List tasks for a specific project
+snip task list --project 1
+
+# List tasks by status
+snip task list --status pending
+
+# Show task details
+snip task show 1
+
+# Update a task
+snip task update 1 "New Title" --status in_progress --priority medium
+
+# Toggle task completion
+snip task toggle 1
+
+# Delete a task
+snip task delete 1
+```
+
+#### 📋 Checklists
+
+```bash
+# Create a checklist
+snip checklist create "Deployment Checklist" --project 1
+
+# Create a checklist with AI-generated items
+snip checklist ai-create "Pre-launch Checklist" --items 10 --project 1
+
+# List all checklists
+snip checklist list
+
+# List checklists for a project
+snip checklist list --project 1
+
+# Show checklist with progress
+snip checklist show 1
+
+# Add item to checklist
+snip checklist item-add 1 "Test database connection"
+
+# Toggle checklist item completion
+snip checklist item-toggle 5
+
+# Delete checklist item
+snip checklist item-delete 5
+
+# Delete a checklist
+snip checklist delete 1
+```
+
 ## 🚀 Installation
 
 ### Package Managers
@@ -139,11 +257,57 @@ Pre-compiled binaries are available in the [releases](https://github.com/matheuz
 
 ### From Source
 
+#### Prerequisites
+
+- **Go 1.21 or later** - [Download Go](https://go.dev/dl/)
+- **SQLite3 development libraries** (for CGO builds)
+  - Windows: Included with Go or install via [SQLite](https://www.sqlite.org/download.html)
+  - Linux: `sudo apt-get install libsqlite3-dev` (Debian/Ubuntu) or `sudo yum install sqlite-devel` (RHEL/CentOS)
+  - macOS: Usually pre-installed or via Homebrew: `brew install sqlite`
+
+#### Compilation
+
 ```bash
-git clone https://github.com/matheuzgomes/Snip.git
-cd Snip
+# Clone the repository
+git clone https://github.com/hudsonrj/SnipAI.git
+cd SnipAI
+
+# Download dependencies
+go mod download
+
+# Build for your platform
+go build -o snip.exe main.go
+
+# For Windows (explicit)
+set GOOS=windows
+set GOARCH=amd64
+set CGO_ENABLED=1
+go build -o snip.exe main.go
+
+# For Linux
 go build -o snip main.go
+
+# For macOS
+go build -o snip main.go
+
+# Install to system path (Linux/macOS)
 sudo mv snip /usr/local/bin/
+```
+
+#### Windows Build Notes
+
+If you encounter issues running `snip.exe` directly, you can use:
+
+```powershell
+# Option 1: Use go run
+go run main.go --help
+
+# Option 2: Create an alias in PowerShell profile
+# Add to $PROFILE:
+function snip { 
+    Set-Location "C:\repositorio\SnipAI\SnipAI"
+    go run main.go $args
+}
 ```
 
 ## 🗄️ Data Storage
@@ -157,6 +321,57 @@ Snip stores your notes in a SQLite database located at `~/.snip/notes.db`. The d
 - **Automatic Triggers**: Keeps search index synchronized with your notes
 
 ## 🔧 Configuration
+
+### 🤖 AI Configuration (Groq API)
+
+To use AI-powered features, you need to configure the `GROQ_API_KEY` environment variable.
+
+#### Get Your API Key
+
+1. Visit [Groq Console](https://console.groq.com/keys)
+2. Sign up or log in
+3. Generate a new API key
+4. Copy the key
+
+#### Set Environment Variable
+
+**Windows (PowerShell):**
+```powershell
+# Temporary (current session only)
+$env:GROQ_API_KEY="your_api_key_here"
+
+# Permanent (add to user profile)
+[Environment]::SetEnvironmentVariable("GROQ_API_KEY", "your_api_key_here", "User")
+```
+
+**Windows (CMD):**
+```cmd
+# Temporary
+set GROQ_API_KEY=your_api_key_here
+
+# Permanent: Control Panel > System > Advanced Settings > Environment Variables
+```
+
+**Linux/macOS:**
+```bash
+# Temporary
+export GROQ_API_KEY="your_api_key_here"
+
+# Permanent (add to ~/.bashrc or ~/.zshrc)
+echo 'export GROQ_API_KEY="your_api_key_here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Verify Configuration:**
+```bash
+# Windows PowerShell
+echo $env:GROQ_API_KEY
+
+# Linux/macOS
+echo $GROQ_API_KEY
+```
+
+For detailed instructions, see [README_API_KEY.md](README_API_KEY.md).
 
 ### Editor Selection
 
@@ -176,7 +391,6 @@ Snip automatically detects your preferred editor with cross-platform support:
 2. Platform-specific editor detection
 3. Smart fallback to basic editors
 
-
 **Check Available Editors:**
 ```bash
 snip editor
@@ -184,7 +398,17 @@ snip editor
 
 ### Database Location
 
-The database is automatically created at `~/.snip/notes.db`. You can backup your notes by copying this file.
+The database is automatically created at `~/.snip/notes.db`. The database includes:
+
+- **Notes Table**: Your notes with metadata
+- **Tags Table**: Custom tags
+- **Projects Table**: Project information
+- **Tasks Table**: Task details
+- **Checklists Table**: Checklist definitions
+- **Checklist Items Table**: Individual checklist items
+- **FTS Table**: Full-text search index
+
+You can backup your data by copying the `~/.snip/notes.db` file.
 
 ## 🛠️ Development
 
@@ -218,7 +442,7 @@ go test -v ./internal/test/...
 
 ## 🗺️ Roadmap
 
-### Coming Soon
+### ✅ Completed Features
 
 - ~~**🗑️ Delete Notes**: Remove notes you no longer need~~ ✅ Done!
 - ~~**🏷️ Tags**: Organize notes with custom tags~~ ✅ Done!
@@ -227,6 +451,9 @@ go test -v ./internal/test/...
 - ~~**📥 Import**: Import notes from files and directories~~ ✅ Done!
 - ~~**🧪 Testing**: Comprehensive test suite with benchmarks~~ ✅ Done!
 - ~~**🖼️ Markdown Preview**: Visualize rendered Markdown so you can see your notes as they'd appear formatted~~ ✅ Done!
+- ~~**🤖 AI Features**: AI-powered note creation, code generation, search enhancement, and Q&A~~ ✅ Done!
+- ~~**📁 Project Management**: Create and manage projects with tasks and checklists~~ ✅ Done!
+- ~~**✅ Checklists**: Create checklists with AI-generated items and track progress~~ ✅ Done!
 
 ### Performance Metrics
 
