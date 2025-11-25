@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/snip/internal/ai"
 	"github.com/snip/internal/note"
 	"github.com/snip/internal/repository"
 	"github.com/snip/internal/validation"
@@ -35,6 +36,10 @@ type Handler interface {
 	ExportNotes(since string, format string) error
 	BackupDatabase() error
 	ImportNotes(importDir string) error
+	CreateNoteWithAI(topic string, context string, tag *string) error
+	ImproveSearchWithAI(query string) error
+	AskAI(question string) error
+	GenerateCodeWithAI(language string, description string, context string) error
 }
 
 type handler struct {
@@ -43,15 +48,18 @@ type handler struct {
 	validator     *validation.Validator
 	editorHandler *EditorHandler
 	dateFormat    string
+	groqClient    *ai.GroqClient
 }
 
 func NewHandler(noteRepo repository.NoteRepository, tagRepo repository.TagRepository) Handler {
+	groqClient, _ := ai.NewGroqClient()
 	return &handler{
 		noteRepo:      noteRepo,
 		tagRepo:       tagRepo,
 		validator:     validation.NewValidator(),
 		dateFormat:    "2006-01-02 15:04:05",
 		editorHandler: NewEditorHandler(),
+		groqClient:    groqClient,
 	}
 }
 
@@ -556,4 +564,121 @@ func parseSinceFilter(since string) (time.Time, error) {
 
 func renderMarkdownContent(content string) string {
 	return string(markdown.Render(content, markdownWidth, markdownPad))
+}
+
+func (h *handler) CreateNoteWithAI(topic string, context string, tag *string) error {
+	if h.groqClient == nil {
+		return fmt.Errorf("AI client not available")
+	}
+
+	fmt.Println("Generating content with AI...")
+	content, err := h.groqClient.GenerateNoteContent(topic, context)
+	if err != nil {
+		return fmt.Errorf("failed to generate content with AI: %w", err)
+	}
+
+	newNote := note.NewNote(topic, content)
+	if err := h.noteRepo.Create(newNote); err != nil {
+		return fmt.Errorf("failed to create note: %w", err)
+	}
+
+	if tag != nil && *tag != "" {
+		if err := h.AssociateTagsWithNote(tag, newNote.ID); err != nil {
+			return fmt.Errorf("failed to associate tags with note: %w", err)
+		}
+	}
+
+	fmt.Printf("Note created successfully with AI!\n")
+	fmt.Printf("● #%d  %s\n", newNote.ID, newNote.Title)
+	return nil
+}
+
+func (h *handler) ImproveSearchWithAI(query string) error {
+	if h.groqClient == nil {
+		return fmt.Errorf("AI client not available")
+	}
+
+	// Get some recent notes for context
+	notes, err := h.noteRepo.GetRecent(5)
+	if err != nil {
+		return fmt.Errorf("failed to get notes for context: %w", err)
+	}
+
+	notesContext := make([]string, 0, len(notes))
+	for _, note := range notes {
+		notesContext = append(notesContext, fmt.Sprintf("%s: %s", note.Title, note.Content))
+	}
+
+	fmt.Println("Improving search query with AI...")
+	improvedQuery, err := h.groqClient.ImproveSearchQuery(query, notesContext)
+	if err != nil {
+		return fmt.Errorf("failed to improve search query: %w", err)
+	}
+
+	// Clean the improved query - remove special characters that might break FTS
+	improvedQuery = strings.TrimSpace(improvedQuery)
+	// Remove quotes and parentheses that might cause issues
+	improvedQuery = strings.Trim(improvedQuery, "\"'()")
+	// Remove SQL-like operators that FTS doesn't support
+	improvedQuery = strings.ReplaceAll(improvedQuery, " AND ", " ")
+	improvedQuery = strings.ReplaceAll(improvedQuery, " OR ", " ")
+	improvedQuery = strings.ReplaceAll(improvedQuery, " NOT ", " ")
+	
+	// Extract first few meaningful words (limit to 5 words max for better FTS results)
+	words := strings.Fields(improvedQuery)
+	if len(words) > 5 {
+		words = words[:5]
+	}
+	improvedQuery = strings.Join(words, " ")
+	improvedQuery = strings.TrimSpace(improvedQuery)
+
+	// If the improved query is empty, fall back to original
+	if improvedQuery == "" {
+		fmt.Printf("Using original query: %s\n\n", query)
+		return h.FindNotes(query)
+	}
+
+	fmt.Printf("Improved query: %s\n\n", improvedQuery)
+	return h.FindNotes(improvedQuery)
+}
+
+func (h *handler) AskAI(question string) error {
+	if h.groqClient == nil {
+		return fmt.Errorf("AI client not available")
+	}
+
+	// Get relevant notes for context
+	notes, err := h.noteRepo.GetRecent(10)
+	if err != nil {
+		return fmt.Errorf("failed to get notes for context: %w", err)
+	}
+
+	notesContext := make([]string, 0, len(notes))
+	for _, note := range notes {
+		notesContext = append(notesContext, fmt.Sprintf("%s: %s", note.Title, note.Content))
+	}
+
+	fmt.Println("Asking AI...")
+	answer, err := h.groqClient.AnswerQuestion(question, notesContext)
+	if err != nil {
+		return fmt.Errorf("failed to get answer from AI: %w", err)
+	}
+
+	fmt.Println("\n" + renderMarkdownContent(answer))
+	return nil
+}
+
+func (h *handler) GenerateCodeWithAI(language string, description string, context string) error {
+	if h.groqClient == nil {
+		return fmt.Errorf("AI client not available")
+	}
+
+	fmt.Printf("Generating %s code with AI...\n", language)
+	code, err := h.groqClient.GenerateCode(language, description, context)
+	if err != nil {
+		return fmt.Errorf("failed to generate code with AI: %w", err)
+	}
+
+	fmt.Println("\n" + renderMarkdownContent(code))
+	return nil
 }

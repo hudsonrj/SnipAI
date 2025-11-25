@@ -89,6 +89,64 @@ func ensureDatabase(db *sql.DB) error {
     CREATE TRIGGER IF NOT EXISTS notes_fts_ad AFTER DELETE ON notes BEGIN
         DELETE FROM notes_fts WHERE id = old.id;
     END;
+
+    -- Projects Table
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Tasks Table
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        project_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'pending',
+        priority TEXT DEFAULT 'medium',
+        due_date DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
+
+    -- Checklists Table
+    CREATE TABLE IF NOT EXISTS checklists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id INTEGER,
+        project_id INTEGER,
+        title TEXT NOT NULL,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
+
+    -- Checklist Items Table
+    CREATE TABLE IF NOT EXISTS checklist_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        checklist_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        completed INTEGER DEFAULT 0,
+        item_order INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE
+    );
+
+    -- Indexes
+    CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
+    CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
+    CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+    CREATE INDEX IF NOT EXISTS idx_checklists_task_id ON checklists(task_id);
+    CREATE INDEX IF NOT EXISTS idx_checklists_project_id ON checklists(project_id);
+    CREATE INDEX IF NOT EXISTS idx_checklist_items_checklist_id ON checklist_items(checklist_id);
     `
 
 	_, err := db.Exec(query)

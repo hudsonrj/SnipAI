@@ -10,9 +10,13 @@ import (
 )
 
 var (
-	globalNoteRepo repository.NoteRepository
-	globalTagRepo repository.TagRepository
-	repoOnce   sync.Once
+	globalNoteRepo      repository.NoteRepository
+	globalTagRepo       repository.TagRepository
+	globalProjectRepo   repository.ProjectRepository
+	globalTaskRepo      repository.TaskRepository
+	globalChecklistRepo repository.ChecklistRepository
+	globalChecklistItemRepo repository.ChecklistItemRepository
+	repoOnce            sync.Once
 )
 
 func getRepository() (repository.NoteRepository, repository.TagRepository, error) {
@@ -24,7 +28,26 @@ func getRepository() (repository.NoteRepository, repository.TagRepository, error
 			return
 		}
 		globalNoteRepo, err = repository.NewNoteRepository(db)
+		if err != nil {
+			return
+		}
 		globalTagRepo, err = repository.NewTagRepository(db)
+		if err != nil {
+			return
+		}
+		globalProjectRepo, err = repository.NewProjectRepository(db)
+		if err != nil {
+			return
+		}
+		globalTaskRepo, err = repository.NewTaskRepository(db)
+		if err != nil {
+			return
+		}
+		globalChecklistRepo, err = repository.NewChecklistRepository(db)
+		if err != nil {
+			return
+		}
+		globalChecklistItemRepo, err = repository.NewChecklistItemRepository(db)
 	})
 	return globalNoteRepo, globalTagRepo, err
 }
@@ -40,10 +63,67 @@ func setupHandler() (handler.Handler, error) {
 	return h, nil
 }
 
+func setupProjectHandler() (handler.ProjectHandler, error) {
+	_, _, err := getRepository()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	h := handler.NewProjectHandler(globalProjectRepo, globalTaskRepo)
+	return h, nil
+}
+
+func setupTaskHandler() (handler.TaskHandler, error) {
+	_, _, err := getRepository()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	h := handler.NewTaskHandler(globalTaskRepo, globalProjectRepo)
+	return h, nil
+}
+
+func setupChecklistHandler() (handler.ChecklistHandler, error) {
+	_, _, err := getRepository()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	h := handler.NewChecklistHandler(globalChecklistRepo, globalChecklistItemRepo)
+	return h, nil
+}
+
 func executeWithHandler(fn func(handler.Handler) error) error {
 	h, err := setupHandler()
 	if err != nil {
 		return fmt.Errorf("failed to setup handler: %w", err)
+	}
+
+	return fn(h)
+}
+
+func executeWithProjectHandler(fn func(handler.ProjectHandler) error) error {
+	h, err := setupProjectHandler()
+	if err != nil {
+		return fmt.Errorf("failed to setup project handler: %w", err)
+	}
+
+	return fn(h)
+}
+
+func executeWithTaskHandler(fn func(handler.TaskHandler) error) error {
+	h, err := setupTaskHandler()
+	if err != nil {
+		return fmt.Errorf("failed to setup task handler: %w", err)
+	}
+
+	return fn(h)
+}
+
+func executeWithChecklistHandler(fn func(handler.ChecklistHandler) error) error {
+	h, err := setupChecklistHandler()
+	if err != nil {
+		return fmt.Errorf("failed to setup checklist handler: %w", err)
 	}
 
 	return fn(h)

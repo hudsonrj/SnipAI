@@ -195,8 +195,8 @@ func (r *repository) Delete(id int) error {
 
 func (r *repository) Search(term string) ([]*note.Note, error) {
 	query := `
-		SELECT n.id, n.title, n.content
-		FROM notes_fts n
+		SELECT id, title, content
+		FROM notes_fts
 		WHERE notes_fts MATCH ?
 	`
 
