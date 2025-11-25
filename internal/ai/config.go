@@ -13,4 +13,3 @@ func GetAPIKey() string {
 	}
 	return apiKey
 }
-
